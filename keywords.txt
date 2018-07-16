@@ -1,9 +1,12 @@
-#Class Definitions
+#KEYWORD1 - Class Definitions
+MPL3115A2	KEYWORD1
 
-#Function Definitions
+#KEYWORD2 - Function Definitions
+getPressure	KEYWORD2
+getTempurature	KEYWORD2
+getPressureDelta	KEYWORD2
+getTempuratureDelta	KEYWORD2
+setMode	KEYWORD2
+setOversampleRatio	KEYWORD2
 
-#Literal Definitions
-
-KEYWORD1 - Classes
-KEYWORD2 - Functions
-LITERAL1 - DEFINITIONS
+#LITERAL1 - Literal Definitions
