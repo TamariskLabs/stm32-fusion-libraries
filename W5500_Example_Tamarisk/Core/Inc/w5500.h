@@ -1,11 +1,11 @@
 #ifndef __W5500_H
 #define __W5500_H
 
-//setup the address register map
+//address map for chip wide parameters
 #define MODE_REG 					0x0000
 #define GAR0_REG					0x0001
 #define GAR1_REG					0x0002
-#define GAR2_REG						0x0003
+#define GAR2_REG					0x0003
 #define GAR3_REG					0x0004
 #define SUBR0_REG					0x0005
 #define SUBR1_REG					0x0006
@@ -50,6 +50,48 @@
 #define UPORTR1_REG				0x002D
 #define PHYCFGR						0x002E
 #define VERSIONR					0x0039
+
+//address map for socket specific parameters
+#define S_MR_ADDR				0x0000
+#define S_CR_ADDR				0x0001
+#define S_IR_ADDR				0x0002
+#define S_SR_ADDR				0x0003
+#define S_PORT0_ADDR			0x0004
+#define S_PORT1_ADDR			0x0005
+#define S_DHAR0_ADDR			0x0006
+#define S_DHAR1_ADDR			0x0007
+#define S_DHAR2_ADDR			0x0008
+#define S_DHAR3_ADDR			0x0009
+#define S_DHAR4_ADDR			0x000A
+#define S_DHAR5_ADDR			0x000B
+#define S_DIPR0_ADDR			0x000C
+#define S_DIRR1_ADDR			0x000D
+#define S_DIRR2_ADDR			0x000E
+#define S_DIRR3_ADDR			0x000F
+#define S_DPORT0_ADDR			0x0010
+#define S_DPORT1_ADDR			0x0011
+#define S_MSSR0_ADDR			0x0012
+#define S_MSSR1_ADDR			0x0013
+#define S_TOS_ADDR				0x0015
+#define S_TTL_ADDR				0x0016
+#define S_RXBUF_SIZE_ADDR	0x001E
+#define S_TXBUF_SIZE_ADDR	0x001F
+#define S_TX_FSR0_ADDR		0x0020
+#define S_TX_FSR1_ADDR		0x0021
+#define S_TX_RD0_ADDR			0x0022
+#define S_TX_RD1_ADDR			0x0023
+#define S_TX_WR0_ADDR			0x0024
+#define S_TX_WR1_ADDR			0x0025
+#define S_RX_RSR0_ADDR		0x0026
+#define S_RX_RSR1_ADDR		0x0027
+#define S_RX_RD0_ADDR			0x0028
+#define S_RX_RD1_ADDR			0x0029
+#define S_RX_WR0_ADDR			0x002A
+#define S_RX_WR1_ADDR			0x002B
+#define S_IMR_ADDR				0x002C
+#define S_FRAG0_ADDR			0x002D
+#define S_FRAG1_ADDR			0x002E
+#define SKPALVTR_ADDR			0x002F
 
 //setup the control phase map - blocks
 #define COMMON_REG 				0x00
