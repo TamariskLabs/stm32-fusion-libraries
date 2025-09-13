@@ -12,11 +12,16 @@ typedef struct {
     uint8_t data[8];    // Payload
 } CAN_Message_t;
 
+// defines a callback type for received CAN messages
+typedef void (*CAN_Comm_RxCallback_t)(const CAN_Message_t *msg);
+
 // Initializes CAN and starts reception
-HAL_StatusTypeDef CAN_Comm_Init(FDCAN_HandleTypeDef *hcan);
+HAL_StatusTypeDef fusion_can_bus_init(FDCAN_HandleTypeDef *hcan);
 
 // Sends a CAN message
-HAL_StatusTypeDef CAN_Comm_Send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *msg);
+HAL_StatusTypeDef fusion_can_bus_send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *msg);
 
 // Registers a callback for received messages
-//HAL_StatusTypeDef CAN_Comm_RegisterRxCallback(CAN_Comm_RxCallback_t callback);
+HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id);
+
+#endif

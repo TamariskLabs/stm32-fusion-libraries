@@ -2,18 +2,19 @@
 #include <string.h>
 
 // ------------------------- MODULE MACROS ---------------------
-#define CAN_COMM_MAX_CALLBACKS 10
+#define MAX_RX_CALLBACKS 10
 
 // ------------------ MODULE STATIC VARIABLES ------------------
 
 // Pointer to the CAN handle structure
 static FDCAN_HandleTypeDef *hcan_ptr;
 
-// defines a callback type for received CAN messages
-typedef void (*CAN_Comm_RxCallback_t)(const CAN_Message_t *msg);
+
 // list of callbacks for routing received messages to
-static CAN_Comm_RxCallback_t *rx_callbacks[CAN_COMM_MAX_CALLBACKS] = {NULL};
-// keeps track of the number of registered callbacks
+static CAN_Comm_RxCallback_t rx_callbacks[MAX_RX_CALLBACKS] = {NULL};
+// list of message id's that correspond with each callback
+static uint32_t rx_callback_id_list[MAX_RX_CALLBACKS] = {0};
+// keeps track of the number of registered callback functions
 static uint8_t rx_callback_count = 0;
 
 // ------------------- MODULE STATIC FUNCTIONS -----------------
@@ -28,27 +29,27 @@ static void fusion_can_interface_process_rx_message(const CAN_Message_t *msg)
     // iterate through each of the registered callbacks to route the message
     // to the appropriate handler
     for (uint8_t i = 0; i < rx_callback_count; i++) {
-        if (rx_callbacks[i] != NULL) {
-            rx_callbacks[i](msg);
-        }
+    	// check if the recieved message id matches any of the registered callback ids
+    	if (rx_callback_id_list[i] == msg->id) {
+			if (rx_callbacks[i] != NULL) {
+				// Call the callback function with the message
+				rx_callbacks[i](msg);
+			}
+    	}
     }
 }
 
 // ------------------ FUNCTION DEFINITIONS ---------------------
 
-/** 
+/**
  * @brief Initializes the CAN communication interface.
  * @param hcan Pointer to the CAN handle structure.
  * @return HAL status code.
  */
-HAL_StatusTypeDef CAN_Comm_Init(FDCAN_HandleTypeDef *hcan)
+HAL_StatusTypeDef fusion_can_bus_init(FDCAN_HandleTypeDef *hcan)
 {
     // Store the CAN handle pointer for later use
     hcan_ptr = hcan;
-
-    // Start the CAN peripheral and validate it started successfully
-    if (HAL_FDCAN_Start(hcan_ptr) != HAL_OK)
-        return HAL_ERROR;
 
     // Optional filter to accept all messages
     FDCAN_FilterTypeDef f = {0};
@@ -64,6 +65,10 @@ HAL_StatusTypeDef CAN_Comm_Init(FDCAN_HandleTypeDef *hcan)
 	if (HAL_FDCAN_ConfigFilter(hcan_ptr, &f) != HAL_OK) {
 		Error_Handler();
 	}
+
+	// Start the CAN peripheral and validate it started successfully
+	if (HAL_FDCAN_Start(hcan_ptr) != HAL_OK)
+		return HAL_ERROR;
 
 
     // Enable RX FIFO0 “new message” notification (interrupt mode)
@@ -82,19 +87,18 @@ HAL_StatusTypeDef CAN_Comm_Init(FDCAN_HandleTypeDef *hcan)
  * @param msg Pointer to the CAN message to send.
  * @return HAL status code.
  */
-HAL_StatusTypeDef CAN_Comm_Send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *msg)
+HAL_StatusTypeDef fusion_can_bus_send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *msg)
 {
     FDCAN_TxHeaderTypeDef txHeader;
-    uint32_t txMailbox;
 
     txHeader.Identifier = msg->id;                   // Set the standard ID of the message
-    txHeader.IdType = FDCAN_STANDARD_ID;                  // Set the identifier type to standard
-    //txHeader.TxFrameType = FDCAN_RTR_DATA;                // Set the remote transmission request to data frame
-    txHeader.DataLength = msg->dlc;                    // Set the data length code (DLC) (see message structure for more info)
-    //txHeader.TransmitGlobalTime = DISABLE;      // Disable global time for transmission
+    txHeader.IdType = FDCAN_STANDARD_ID;             // Set the identifier type to standard
+    //txHeader.TxFrameType = FDCAN_RTR_DATA;         // Set the remote transmission request to data frame
+    txHeader.DataLength = msg->dlc;                  // Set the data length code (DLC) (see message structure for more info)
+    //txHeader.TransmitGlobalTime = DISABLE;         // Disable global time for transmission
 
     // Add the message to the transmit mailbox (will queue up to 3 messages for sending before returning an error)
-    return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &txHeader, (uint8_t*)msg->data, &txMailbox);
+    return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &txHeader, (uint8_t*)msg->data);
 }
 
 /**
@@ -102,11 +106,11 @@ HAL_StatusTypeDef CAN_Comm_Send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *
  * This function is called automatically on RX interrupt.
  * @param hcan Pointer to the CAN handle structure.
  */
-void HAL_CAN_RxFifo0MsgPendingCallback(FDCAN_HandleTypeDef *hcan)
+void HAL_FDCAN_RxFifo0Casllback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
 {
-    // validate that the can handler is the same as the one initialized
-    // this prevents processing messages from other CAN interfaces
-    if (hcan != hcan_ptr) return;
+
+    // Read the interrupt status register to determine the cause of the interrupt
+    if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) == RESET) return;
 
     // Create a hal structure to hold the received message
     FDCAN_RxHeaderTypeDef rxHeader;
@@ -115,7 +119,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(FDCAN_HandleTypeDef *hcan)
 
     // Get the received message from the CAN RX FIFO
     // If the message cannot be retrieved, return without processing
-    if (HAL_FDCAN_GetRxMessage(hcan, FDCAN_RX_FIFO0, &rxHeader, msg.data) != HAL_OK) { return; }
+    if (HAL_FDCAN_GetRxMessage(hcan, FDCAN_RX_FIFO0, &rxHeader, msg.data) != HAL_OK) {
+    	Error_Handler();
+    }
 
     // Check if the received message is a standard ID message
     // If it is, populate the message structure and call the user-defined callback
@@ -124,7 +130,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(FDCAN_HandleTypeDef *hcan)
         msg.id = rxHeader.Identifier;
         msg.dlc = rxHeader.DataLength;
 
-        // route the packet to the appropriate user defined callback function
+        // call the function that routes the packet to the appropriate user defined callback function
+        fusion_can_interface_process_rx_message(&msg);
 
     }
 }
@@ -134,14 +141,22 @@ void HAL_CAN_RxFifo0MsgPendingCallback(FDCAN_HandleTypeDef *hcan)
  * @param callback Pointer to the callback function to register.
  * @return HAL status code.
  */
-/*
-HAL_StatusTypeDef CAN_Comm_RegisterRxCallback(CAN_Comm_RxCallback_t callback)
+
+HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id)
 {
     // Check if there is room for a new callback
     if (rx_callback_count < MAX_RX_CALLBACKS) {
-        rx_callbacks[rx_callback_count++] = callback;
+
+    	// Add the callback to the list
+        rx_callbacks[rx_callback_count] = callback;
+        // add the corresponding message id to the list
+        rx_callback_id_list[rx_callback_count] = msg_id;
+
+        // increment the callback counter
+        rx_callback_count++;
+
+        // return success
         return HAL_OK;
     }
     return HAL_ERROR;
 }
-*/
