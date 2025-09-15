@@ -22,6 +22,6 @@ HAL_StatusTypeDef fusion_can_bus_init(FDCAN_HandleTypeDef *hcan);
 HAL_StatusTypeDef fusion_can_bus_send(FDCAN_HandleTypeDef *hcan, const CAN_Message_t *msg);
 
 // Registers a callback for received messages
-HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id);
+HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id, uint32_t mask);
 
 #endif
