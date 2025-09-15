@@ -101,12 +101,13 @@ HAL_StatusTypeDef fusion_can_bus_send(FDCAN_HandleTypeDef *hcan, const CAN_Messa
     return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &txHeader, (uint8_t*)msg->data);
 }
 
+
 /**
  * @brief Callback function for CAN RX FIFO0 message pending.
  * This function is called automatically on RX interrupt.
  * @param hcan Pointer to the CAN handle structure.
  */
-void HAL_FDCAN_RxFifo0Casllback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
 {
 
     // Read the interrupt status register to determine the cause of the interrupt
@@ -129,6 +130,8 @@ void HAL_FDCAN_RxFifo0Casllback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
         // Populate the message structure with the received data
         msg.id = rxHeader.Identifier;
         msg.dlc = rxHeader.DataLength;
+
+        HAL_GPIO_TogglePin(GPIOA, STATUS_LED_GREEN_Pin);
 
         // call the function that routes the packet to the appropriate user defined callback function
         fusion_can_interface_process_rx_message(&msg);
