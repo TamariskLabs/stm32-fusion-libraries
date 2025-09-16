@@ -2,7 +2,7 @@
 #include <string.h>
 
 // ------------------------- MODULE MACROS ---------------------
-#define MAX_RX_CALLBACKS 10
+#define MAX_RX_CALLBACKS 15
 
 // ------------------ MODULE STATIC VARIABLES ------------------
 
@@ -129,7 +129,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
         // iterate through each of the registered callbacks to route the message to the appropriate handler
 		for (uint8_t i = 0; i < rx_callback_count; i++) {
 			// check if the received message id matches any of the registered callback ids
-			if ( (rx_callback_id_list[i] & rx_callback_id_mask_list[i]) == msg.id) {
+			if ( (rx_callback_id_list[i]) == msg.id) {
 				if (rx_callbacks[i] != NULL) {
 					// Call the callback function with the message
 					rx_callbacks[i](&msg);
@@ -147,7 +147,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hcan, uint32_t RxFifo0ITs)
  * @return HAL status code.
  */
 
-HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id, uint32_t mask)
+HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t callback, uint32_t msg_id)
 {
     // Check if there is room for a new callback
     if (rx_callback_count < MAX_RX_CALLBACKS) {
@@ -156,8 +156,6 @@ HAL_StatusTypeDef fusion_can_bus_register_rx_callback(CAN_Comm_RxCallback_t call
         rx_callbacks[rx_callback_count] = callback;
         // add the corresponding message id to the list
         rx_callback_id_list[rx_callback_count] = msg_id;
-        // add the corresponding mask to the list
-        rx_callback_id_mask_list[rx_callback_count] = mask;
 
         // increment the callback counter
         rx_callback_count++;
