@@ -42,12 +42,26 @@ typedef enum {
     CANOPEN_SDO_TX_ID      = 0x580,          /**< Service Data Object Transmit */
     CANOPEN_SDO_RX_ID      = 0x600,          /**< Service Data Object Receive */
 	CANOPEN_HEARTBEAT_ID   = 0x700,		     /**< Resets the internal software heartbeat watchdog timer */
-} CANOpen_Function_code_t;
+} CANOpen_Function_Code_t;
 
 // defines the possible error codes specified by CiA 301
 typedef enum {
+	CANOPEN_NO_ERROR 	   			= 0x0000,
+	CANOPEN_UNSPECIFIED_ERROR 		= 0x1000,
+	CANOPEN_OVERCURRENT_ERROR		= 0x2001,
+	CANOPEN_UNDERVOLTAGE_ERROR		= 0x3001,
+	CANOPEN_OVERVOLTAGE_ERROR		= 0x3002,
+	CANOPEN_OVER_TEMP_ERROR			= 0x4001,
+	CANOPEN_INTERNAL_HARDWARE_ERRPR	= 0x5000,
+	CANOPEN_INTERNAL_SOFTWARE_ERROR	= 0x6000,
+	CANOPEN_EXTERNAL_MONITOR_ERRPR	= 0x7000,
+	CANOPEN_COMMUNICATION_ERROR		= 0x8000,
+	CANOPEN_MESSAGE_OVERRUN_ERROR	= 0x8020,
+	CANOPEN_LOST_HEARTBEAT_ERROR	= 0x8081,
+	CANOPEN_EXTERNAL_TRIGGER_ERROR	= 0x9000,
+	CANOPEN_MFG_SPECIFIC_ERROR		= 0xF000
 
-} CANOpen_ERROR;
+} CANOpen_Error_Code_t;
 
 // defines a Service Data Object (SDO) command specifier
 typedef enum {

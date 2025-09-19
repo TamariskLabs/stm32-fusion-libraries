@@ -13,6 +13,9 @@
 
 // ------------------ MODULE STATIC VARIABLES ------------------
 
+// pointer reference to the CAN handle structure
+static FDCAN_HandleTypeDef *hcan_ptr = NULL;
+
 // Holds the current operational state of the device
 static CANOpen_Device_State_t device_state = DEVICE_STATE_INITIALIZING;
 
@@ -146,6 +149,8 @@ static HAL_StatusTypeDef fusion_can_open_sdo_message_callback(CAN_Message_t *msg
 // Call one time during device startup
 HAL_StatusTypeDef fusion_can_open_init(FDCAN_HandleTypeDef *hcan)
 {
+	// store the CAN handle pointer for later use
+	hcan_ptr = hcan;
 
 	// register the NMT message handler
 	fusion_can_bus_register_rx_callback(fusion_can_open_nmt_message_callback, CANOPEN_NMT_ID);
@@ -154,13 +159,13 @@ HAL_StatusTypeDef fusion_can_open_init(FDCAN_HandleTypeDef *hcan)
 	// register the Time Stamp message handler
 	fusion_can_bus_register_rx_callback(fusion_can_open_time_stamp_message_callback, CANOPEN_TIME_ID);
 	// register the PDO1 message handler
-	fusion_can_bus_register_rx_callback(fusion_can_open_pdo1_message_callback, (CANOPEN_PDO1_ID | device_profile_node_id));
+	fusion_can_bus_register_rx_callback(fusion_can_open_pdo1_message_callback, (CANOPEN_TPDO1_ID | device_profile_node_id));
 	// register the PDO2 message handler
-	fusion_can_bus_register_rx_callback(fusion_can_open_pdo2_message_callback, (CANOPEN_PDO2_ID | device_profile_node_id));
+	fusion_can_bus_register_rx_callback(fusion_can_open_pdo2_message_callback, (CANOPEN_TPDO2_ID | device_profile_node_id));
 	// register the PDO3 message handler
-	fusion_can_bus_register_rx_callback(fusion_can_open_pdo3_message_callback, (CANOPEN_PDO3_ID | device_profile_node_id));
+	fusion_can_bus_register_rx_callback(fusion_can_open_pdo3_message_callback, (CANOPEN_TPDO3_ID | device_profile_node_id));
 	// register the PDO4 message handler
-	fusion_can_bus_register_rx_callback(fusion_can_open_pdo4_message_callback, (CANOPEN_PDO4_ID | device_profile_node_id));
+	fusion_can_bus_register_rx_callback(fusion_can_open_pdo4_message_callback, (CANOPEN_TPDO4_ID | device_profile_node_id));
 	// register the SDO message handler
 	fusion_can_bus_register_rx_callback(fusion_can_open_sdo_message_callback, (CANOPEN_SDO_RX_ID | device_profile_node_id));
 
@@ -181,7 +186,7 @@ void fusion_can_open_update(void)
 	if ((HAL_GetTick() - last_heartbeat_time) > device_profile_heartbeat_interval_ms) {
 		// send a heartbeat message
 		CAN_Message_t heartbeat_msg;
-		heartbeat_msg.id = (CANOPEN_NMT_ERROR_CONTROL_ID | device_profile_node_id);
+		heartbeat_msg.id = (CANOPEN_HEARTBEAT_ID | device_profile_node_id);
 		heartbeat_msg.dlc = 1;
 		heartbeat_msg.data[0] = (uint8_t)device_state;
 		fusion_can_bus_send(hcan_ptr, &heartbeat_msg);

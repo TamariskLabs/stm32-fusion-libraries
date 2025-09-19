@@ -13,10 +13,6 @@ static FDCAN_HandleTypeDef *hcan_ptr;
 static CAN_Comm_RxCallback_t rx_callbacks[MAX_RX_CALLBACKS] = {NULL};
 // list of message id's that correspond with each callback
 static uint32_t rx_callback_id_list[MAX_RX_CALLBACKS] = {0};
-// list of bit masks to apply to the provided id's when matching with
-// received message id's. This is useful when the a portion of the id
-// is used for function codes like in CANopen.
-static uint32_t rx_callback_id_mask_list[i] = {0};
 // keeps track of the number of registered callback functions
 static uint8_t rx_callback_count = 0;
 
