@@ -86,10 +86,9 @@ HAL_StatusTypeDef fusion_can_bus_send(FDCAN_HandleTypeDef *hcan, const CAN_Messa
     	if (HAL_FDCAN_AddMessageToTxFifoQ(hcan, &txHeader, (uint8_t*)msg->data) != HAL_OK) {
     		return HAL_ERROR;
     	}
-    	else {
-    		return HAL_OK;
-    	}
     }
+
+    return HAL_OK;
 }
 
 

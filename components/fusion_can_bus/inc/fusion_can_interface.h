@@ -13,7 +13,7 @@ typedef struct {
 } CAN_Message_t;
 
 // defines a callback type for received CAN messages
-typedef void (*CAN_Comm_RxCallback_t)(const CAN_Message_t *msg);
+typedef void (*CAN_Comm_RxCallback_t)(CAN_Message_t *msg);
 
 // Initializes CAN and starts reception
 HAL_StatusTypeDef fusion_can_bus_init(FDCAN_HandleTypeDef *hcan);

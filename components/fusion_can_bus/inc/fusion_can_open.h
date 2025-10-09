@@ -12,6 +12,11 @@
 // README.md file contained in this component directory.
 
 
+// ----------------------- MODULE MACROS --------------------------------------------------
+
+
+#define MAX_CAN_MESSAGE_LENGTH 8
+
 // ------------------------Module Type Definitions-----------------------------------------
 
 
@@ -105,10 +110,6 @@ void fusion_can_open_update(void);
 
 // returns the current operational state of the node (Initialized, Stopped, Ect)
 CANOpen_Device_State_t fusion_can_open_get_state(void);
-
-// send an emergency packet to the master node containing the corresponding code
-// and places the device in the DEVICE_STATE_STOPPED state
-HAL_StatusTypeDef fusion_can_open_send_emergency(CANOpenERROR error);
 
 
 #endif
